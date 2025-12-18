@@ -51,5 +51,4 @@ The repository provides automated setup for systemd in the `conf/` directory:
 2. Every 60 seconds, it refreshes the list.
 3. If new models (detected by `created_at` timestamp) are found, it generates a Discord embed and sends it to the configured webhook.
 
-## License
-[MIT](LICENSE)
+## [License](LICENSE)
