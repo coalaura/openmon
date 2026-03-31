@@ -29,8 +29,11 @@ go build -o openmon .
 Create a `config.yml` in the same directory as the binary:
 
 ```yaml
-api-key: "sk-or-v1-your-api-key"
-webhook: "https://discord.com/api/webhooks/your-webhook-url"
+api-key: "sk-or-v1-yourapikey"
+webhook: "https://discord.com/api/webhooks/123456789/asdasdasdasdasda-asdasdasdasd"
+providers:
+  include: []
+  exclude: []
 ```
 
 ## Deployment (systemd)
