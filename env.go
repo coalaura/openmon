@@ -7,9 +7,15 @@ import (
 	"github.com/goccy/go-yaml"
 )
 
+type ConfigProviders struct {
+	Include []string `yaml:"include"`
+	Exclude []string `yaml:"exclude"`
+}
+
 type Config struct {
-	ApiKey  string `yaml:"api-key"`
-	Webhook string `yaml:"webhook"`
+	ApiKey    string          `yaml:"api-key"`
+	Webhook   string          `yaml:"webhook"`
+	Providers ConfigProviders `yaml:"providers"`
 }
 
 func LoadConfig() (*Config, error) {

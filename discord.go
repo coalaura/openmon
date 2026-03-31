@@ -17,11 +17,7 @@ func Notify(cfg *Config, list []Model) error {
 	for _, model := range list {
 		created := time.Unix(model.CreatedAt, 0)
 
-		ctx := "N/A"
-
-		if model.Context != nil {
-			ctx = strconv.FormatInt(*model.Context, 10)
-		}
+		ctx := strconv.FormatInt(model.Context, 10)
 
 		description := fmt.Sprintf(
 			"```\nModality: %s\nContext:  %s tokens\nPricing:  $%s 🡒 $%s\n```\n\n*%s*",

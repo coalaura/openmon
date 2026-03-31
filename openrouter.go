@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"slices"
 	"sort"
-	"strconv"
 	"strings"
 
-	"github.com/revrost/go-openrouter"
+	"github.com/coalaura/openingrouter"
 )
 
 type ModelPricing struct {
@@ -19,50 +19,45 @@ type Model struct {
 	Slug        string
 	Name        string
 	Description string
-	Context     *int64
+	Context     int64
 	Modality    string
 	CreatedAt   int64
 	Pricing     ModelPricing
 }
 
 func FetchModels(cfg *Config) ([]Model, error) {
-	clientCfg := openrouter.DefaultConfig(cfg.ApiKey)
-
-	clientCfg.XTitle = "OpenMon"
-	clientCfg.HttpReferer = "https://github.com/coalaura/openmon"
-
-	client := openrouter.NewClientWithConfig(*clientCfg)
-
-	list, err := client.ListModels(context.Background())
+	list, err := openingrouter.ListFrontendModels(context.Background())
 	if err != nil {
 		return nil, err
 	}
 
-	models := make([]Model, len(list))
+	models := make([]Model, 0, len(list))
 
-	for i, model := range list {
-		input, err := strconv.ParseFloat(model.Pricing.Prompt, 64)
-		if err != nil {
-			return nil, err
+	for _, model := range list {
+		if model.Endpoint == nil {
+			continue
 		}
 
-		output, err := strconv.ParseFloat(model.Pricing.Completion, 64)
-		if err != nil {
-			return nil, err
+		if len(cfg.Providers.Include) > 0 && slices.Contains(cfg.Providers.Include, model.Author) {
+			continue
 		}
 
-		models[i] = Model{
-			Slug:        model.ID,
+		if slices.Contains(cfg.Providers.Exclude, model.Author) {
+			continue
+		}
+
+		models = append(models, Model{
+			Slug:        model.Slug,
 			Name:        model.Name,
 			Description: model.Description,
-			Context:     model.ContextLength,
-			Modality:    Modalities(model.Architecture.InputModalities, model.Architecture.OutputModalities),
-			CreatedAt:   model.Created,
+			Context:     int64(model.ContextLength),
+			Modality:    Modalities(model.InputModalities, model.OutputModalities),
+			CreatedAt:   model.CreatedAt.Unix(),
 			Pricing: ModelPricing{
-				Input:  input * 1000000,
-				Output: output * 1000000,
+				Input:  model.Endpoint.Pricing.Prompt.Float64() * 1000000,
+				Output: model.Endpoint.Pricing.Completion.Float64() * 1000000,
 			},
-		}
+		})
 	}
 
 	sort.Slice(models, func(i, j int) bool {

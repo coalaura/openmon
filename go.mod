@@ -1,15 +1,16 @@
 module openmon
 
-go 1.25.5
+go 1.26.1
 
 require (
-	github.com/coalaura/plain v1.1.4
-	github.com/goccy/go-yaml v1.19.1
-	github.com/revrost/go-openrouter v1.1.5
+	github.com/coalaura/openingrouter v0.0.0-20260219212935-204abf45d5dd
+	github.com/coalaura/plain v1.4.3
+	github.com/goccy/go-yaml v1.19.2
 )
 
 require (
+	github.com/coalaura/byteconv v0.0.0-20260219201828-c79809dc218c // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	golang.org/x/sys v0.35.0 // indirect
-	golang.org/x/term v0.34.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/term v0.41.0 // indirect
 )
