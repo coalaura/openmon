@@ -1,4 +1,8 @@
-# openmon
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/banner.svg">
+  <source media="(prefers-color-scheme: light)" srcset=".github/banner-light.svg">
+  <img alt="openmon - New models. On your radar." src=".github/banner-light.svg">
+</picture>
 
 A lightweight monitor for OpenRouter that tracks new model releases and sends rich notifications to a Discord webhook.
 

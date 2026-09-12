@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="240" viewBox="0 0 800 240" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">openmon — New models. On your radar.</title>
+  <desc id="description">A teal radar mark beside the openmon wordmark. A lightweight OpenRouter monitor with Discord notifications.</desc>
+
+  <g transform="translate(148 120)" stroke="#0f766e" stroke-width="2">
+    <circle r="64" stroke-opacity="0.5"/>
+    <circle r="42" stroke-opacity="0.25"/>
+    <circle r="20" stroke-opacity="0.25"/>
+    <path d="M0-64V64M-64 0H64" stroke-opacity="0.15"/>
+    <path d="M0 0 45.255-45.255A64 64 0 0 1 64 0Z" fill="#0f766e" fill-opacity="0.12" stroke="none"/>
+    <path d="M0 0 45.255-45.255" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="45.255" cy="-45.255" r="11" fill="#0f766e" fill-opacity="0.15" stroke="none"/>
+    <circle cx="45.255" cy="-45.255" r="5" fill="#0f766e" stroke="none"/>
+    <circle cx="-29" cy="21" r="4" fill="#0f766e" stroke="none"/>
+    <circle r="4" fill="#0f766e" stroke="none"/>
+  </g>
+
+  <g font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <text x="268" y="133" fill="#14212f" font-size="88" font-weight="700" letter-spacing="-4">openmon</text>
+    <text x="272" y="178" fill="#536174" font-size="23" letter-spacing="0.2">New models. On your radar.</text>
+  </g>
+</svg>
