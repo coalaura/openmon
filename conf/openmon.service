@@ -1,6 +1,7 @@
 [Unit]
 Description=Openmon
-After=network-online.target
+After=network.target
+Requires=network.target
 StartLimitBurst=10
 StartLimitIntervalSec=60
 
@@ -12,13 +13,14 @@ Group=openmon
 WorkingDirectory=/opt/openmon
 ExecStart=/opt/openmon/openmon
 
-StandardOutput=append:/opt/openmon/openmon.log
-StandardError=append:/opt/openmon/openmon.log
+StandardOutput=append:/opt/openmon/logs/openmon.log
+StandardError=append:/opt/openmon/logs/openmon.log
 StandardInput=null
 
 # Filesystem Sandboxing
 ProtectSystem=strict
 ReadOnlyPaths=/opt/openmon
+ReadWritePaths=/opt/openmon/logs
 ProtectHome=yes
 PrivateTmp=yes
 PrivateMounts=yes
@@ -26,7 +28,7 @@ UMask=0077
 
 # Kernel & Hardware Protection
 PrivateDevices=yes
-DevicePolicy=auto
+DevicePolicy=closed
 ProtectKernelTunables=yes
 ProtectKernelModules=yes
 ProtectKernelLogs=yes
@@ -39,14 +41,16 @@ ProtectProc=invisible
 ProcSubset=pid
 LockPersonality=yes
 ProtectHostname=yes
-UtmpMode=missing
+UtmpMode=no
 NoNewPrivileges=yes
 PrivateIPC=yes
+PrivateUsers=no
 RestrictNamespaces=yes
 RemoveIPC=yes
 RestrictRealtime=yes
 RestrictSUIDSGID=true
 KeyringMode=private
+CoredumpFilter=0
 
 # Memory Protection
 MemoryDenyWriteExecute=yes
@@ -59,12 +63,12 @@ SocketBindDeny=any
 # Syscall Filtering
 CapabilityBoundingSet=
 SystemCallErrorNumber=EPERM
-SystemCallFilter=~@clock @cpu-emulation @debug @module @mount @obsolete @reboot @swap @resources  @raw-io@privileged @keyring @pkey @memlock
+SystemCallFilter=~@clock @cpu-emulation @debug @module @mount @obsolete @reboot @swap @resources @raw-io @privileged @keyring @pkey @memlock
 InaccessiblePaths=-/bin -/usr/bin -/sbin -/usr/sbin -/usr/local/bin
 
-Restart=always
+# Restart & Runtime
+Restart=on-failure
 RestartSec=3
-RuntimeMaxSec=5d
 
 # Defaults
 LimitCORE=0
