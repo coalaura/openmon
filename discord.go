@@ -9,22 +9,36 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/coalaura/openingrouter"
 )
 
-func Notify(cfg *Config, list []Model) error {
-	var embeds []map[string]any
+func Notify(cfg *Config, list []openingrouter.FrontendModel) error {
+	embeds := make([]map[string]any, 0, len(list))
 
-	for _, model := range list {
-		created := time.Unix(model.CreatedAt, 0)
+	for index := range list {
+		model := &list[index]
 
-		ctx := strconv.FormatInt(model.Context, 10)
+		created := model.CreatedAt.Time
+
+		contextLength := strconv.Itoa(model.ContextLength)
+
+		var (
+			promptPrice     float64
+			completionPrice float64
+		)
+
+		if model.Endpoint != nil && model.Endpoint.Pricing != nil {
+			promptPrice = model.Endpoint.Pricing.Prompt.Float64() * 1000000
+			completionPrice = model.Endpoint.Pricing.Completion.Float64() * 1000000
+		}
 
 		description := fmt.Sprintf(
 			"```\nModality: %s\nContext:  %s tokens\nPricing:  $%s 🡒 $%s\n```\n\n*%s*",
-			model.Modality,
-			ctx,
-			strconv.FormatFloat(model.Pricing.Input, 'f', -1, 64),
-			strconv.FormatFloat(model.Pricing.Output, 'f', -1, 64),
+			Modalities(model.InputModalities, model.OutputModalities),
+			contextLength,
+			strconv.FormatFloat(promptPrice, 'f', -1, 64),
+			strconv.FormatFloat(completionPrice, 'f', -1, 64),
 			strings.TrimSpace(model.Description),
 		)
 
@@ -43,10 +57,11 @@ func Notify(cfg *Config, list []Model) error {
 		})
 	}
 
-	body, err := json.Marshal(map[string]any{
+	payload := map[string]any{
 		"embeds": embeds,
-	})
+	}
 
+	body, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}

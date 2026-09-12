@@ -21,6 +21,16 @@ func main() {
 
 	log.Printf("Loaded %d models\n", len(models))
 
+	seen := make(map[string]struct{}, len(models))
+
+	for index := range models {
+		seen[models[index].Slug] = struct{}{}
+
+		if models[index].Permaslug != "" {
+			seen[models[index].Permaslug] = struct{}{}
+		}
+	}
+
 	ticker := time.NewTicker(time.Minute)
 
 	for range ticker.C {
@@ -33,7 +43,7 @@ func main() {
 			continue
 		}
 
-		newer := GetNewModels(models, list)
+		newer := GetNewModels(seen, list)
 
 		if len(newer) > 0 {
 			log.Printf("%d new models\n", len(newer))
@@ -44,10 +54,16 @@ func main() {
 
 				continue
 			}
+
+			for index := range newer {
+				seen[newer[index].Slug] = struct{}{}
+
+				if newer[index].Permaslug != "" {
+					seen[newer[index].Permaslug] = struct{}{}
+				}
+			}
 		} else {
 			log.Println("Nothing new")
 		}
-
-		models = list
 	}
 }

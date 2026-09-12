@@ -10,35 +10,23 @@ import (
 	"github.com/coalaura/openingrouter"
 )
 
-type ModelPricing struct {
-	Input  float64
-	Output float64
-}
-
-type Model struct {
-	Slug        string
-	Name        string
-	Description string
-	Context     int64
-	Modality    string
-	CreatedAt   int64
-	Pricing     ModelPricing
-}
-
-func FetchModels(cfg *Config) ([]Model, error) {
+func FetchModels(cfg *Config) ([]openingrouter.FrontendModel, error) {
 	list, err := openingrouter.ListFrontendModels(context.Background())
 	if err != nil {
 		return nil, err
 	}
 
-	models := make([]Model, 0, len(list))
+	models := make([]openingrouter.FrontendModel, 0, len(list))
+	bySlug := make(map[string]int, len(list))
 
-	for _, model := range list {
+	for index := range list {
+		model := &list[index]
+
 		if model.Endpoint == nil {
 			continue
 		}
 
-		if len(cfg.Providers.Include) > 0 && slices.Contains(cfg.Providers.Include, model.Author) {
+		if len(cfg.Providers.Include) > 0 && !slices.Contains(cfg.Providers.Include, model.Author) {
 			continue
 		}
 
@@ -46,51 +34,79 @@ func FetchModels(cfg *Config) ([]Model, error) {
 			continue
 		}
 
-		models = append(models, Model{
-			Slug:        model.Slug,
-			Name:        model.Name,
-			Description: model.Description,
-			Context:     int64(model.ContextLength),
-			Modality:    Modalities(model.InputModalities, model.OutputModalities),
-			CreatedAt:   model.CreatedAt.Unix(),
-			Pricing: ModelPricing{
-				Input:  model.Endpoint.Pricing.Prompt.Float64() * 1000000,
-				Output: model.Endpoint.Pricing.Completion.Float64() * 1000000,
-			},
-		})
+		existingIndex, exists := bySlug[model.Slug]
+		if exists {
+			existing := &models[existingIndex]
+
+			if isBatchVariant(existing) && !isBatchVariant(model) {
+				models[existingIndex] = *model
+			}
+
+			continue
+		}
+
+		bySlug[model.Slug] = len(models)
+
+		models = append(models, *model)
 	}
 
-	sort.Slice(models, func(i, j int) bool {
-		return models[i].CreatedAt > models[j].CreatedAt
+	sort.Slice(models, func(firstIndex, secondIndex int) bool {
+		return models[firstIndex].CreatedAt.After(models[secondIndex].CreatedAt.Time)
 	})
 
 	return models, nil
 }
 
-func Modalities(in, out []string) string {
-	return fmt.Sprintf(
-		"%s 🡒 %s",
-		strings.Join(in, "+"),
-		strings.Join(out, "+"),
-	)
-}
+func GetNewModels(seen map[string]struct{}, list []openingrouter.FrontendModel) []openingrouter.FrontendModel {
+	newer := make([]openingrouter.FrontendModel, 0, len(list))
 
-func GetNewModels(prev, next []Model) []Model {
-	if len(prev) == 0 {
-		return next
-	}
+	batch := make(map[string]struct{}, len(list))
 
-	newer := make([]Model, 0, len(next))
+	for index := range list {
+		model := &list[index]
 
-	latest := prev[0].CreatedAt
-
-	for _, model := range next {
-		if latest >= model.CreatedAt {
-			break
+		if _, exists := seen[model.Slug]; exists {
+			continue
 		}
 
-		newer = append(newer, model)
+		if model.Permaslug != "" {
+			if _, exists := seen[model.Permaslug]; exists {
+				continue
+			}
+		}
+
+		if _, exists := batch[model.Slug]; exists {
+			continue
+		}
+
+		batch[model.Slug] = struct{}{}
+
+		if model.Permaslug != "" {
+			batch[model.Permaslug] = struct{}{}
+		}
+
+		newer = append(newer, *model)
 	}
 
 	return newer
+}
+
+func Modalities(inputModalities, outputModalities []string) string {
+	return fmt.Sprintf(
+		"%s 🡒 %s",
+		strings.Join(inputModalities, "+"),
+		strings.Join(outputModalities, "+"),
+	)
+}
+
+func isBatchVariant(model *openingrouter.FrontendModel) bool {
+	if model.Endpoint == nil {
+		return false
+	}
+
+	if model.Endpoint.Variant == "batch" {
+		return true
+	}
+
+	return strings.HasSuffix(model.Endpoint.ModelVariantSlug, ":batch")
 }
