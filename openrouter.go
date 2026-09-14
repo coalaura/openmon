@@ -22,7 +22,7 @@ func FetchModels(cfg *Config) ([]openingrouter.FrontendModel, error) {
 	for index := range list {
 		model := &list[index]
 
-		if model.Endpoint == nil {
+		if model.Endpoint == nil || strings.EqualFold(model.Group, "router") {
 			continue
 		}
 
